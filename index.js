@@ -17,13 +17,6 @@ const config = require("./config"),
       repo = require("./src/repo"),
       logger = require("./src/logger");
 
-const dbUri = process.env.MONGODB_URI,
-      dbOptions = { useNewUrlParser: true, useUnifiedTopology: true };
-
-mongoose.connect(dbUri, dbOptions)
-  .then(util.databaseConnected)
-  .catch(console.error)
-
 const app = express()
 
 app
@@ -57,7 +50,7 @@ app
 
 app.listen(process.env.PORT || 8080, async () => {
   await agenda.queue.start()
-  util.onStart()
+  util.connectToDb()
 })
 
 /* AUTH */

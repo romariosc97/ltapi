@@ -1,5 +1,7 @@
-const getTimestamp = () => {
-  return new Date().toLocaleTimeString()
+const mongoose = require("mongoose")
+
+const timestampedMessage = (message) => {
+  console.log(`[${new Date().toLocaleTimeString()}]: ${message}`)
 }
 
 exports.bodyHasField = (req, field_name) => {
@@ -13,12 +15,15 @@ exports.logRequest = (req, res, next) => {
   next()
 }
 
-exports.onStart = () => {
-  console.log(`[${getTimestamp()}]: Server running.`)
-}
+exports.connectToDb = () => {
 
-exports.databaseConnected = () => {
-  console.log(`[${getTimestamp()}]: Connected to database.`)
+  const dbUri = process.env.MONGODB_URI,
+        dbOptions = { useNewUrlParser: true, useUnifiedTopology: true };
+
+  mongoose.connect(dbUri, dbOptions)
+    .then(timestampedMessage('Connected to database.'))
+    .catch(console.error)
+
 }
 
 exports.logAuth = (conn, userInfo) => {
