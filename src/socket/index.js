@@ -1,16 +1,18 @@
-const   http = require("http"),
-        socketIo = require("socket.io");
-module.exports = (app) => {
-    const server = http.createServer(app);
-    const io = socketIo(server, {
-    cors: {
-        origin: "http://localhost:3000",
-        //methods: ["GET", "POST"]
-    }
-    });
-    io.on("connection", (socket) => {
-        
-    });
-    server.listen(process.env.PORT || 8000, () => console.log(`Listening on port ${process.env.PORT || 8000}`));
-    return {io: io};
-};
+const http = require("http"),
+      sock = require("socket.io");
+
+module.exports = (server) => {
+
+  const socketOptions = {
+    cors: { origin: "*" }
+  }
+
+  const io = sock(server, socketOptions)
+
+  io.on('connection', (socket) => {
+    console.log('New socket connection.')
+  })
+
+  return { io: io }
+
+}

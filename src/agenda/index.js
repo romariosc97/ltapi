@@ -83,5 +83,7 @@ module.exports = (io) => {
     job.attrs.job_result = job_result
     console.log("Finished job upload_logs.")
   })
-  return {queue: queue};
+
+  return { queue: queue };
+
 }

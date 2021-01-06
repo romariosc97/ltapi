@@ -42,16 +42,19 @@ app
     resave: false,
     saveUninitialized: true
   }))
-  const socket = require("./src/socket")(app);
-  global.my_io = socket.io;
-  const router = require("./src/router")(socket.io);
-  const agenda = require("./src/agenda")(socket.io);
-  const auth = require("./src/auth");
 
-app.listen(process.env.PORT || 8080, async () => {
+const server = app.listen(process.env.PORT || 8080, async () => {
   await agenda.queue.start()
   util.connectToDb()
 })
+
+
+const socket = require("./src/socket")(server);
+const router = require("./src/router")(socket.io);
+const agenda = require("./src/agenda")(socket.io);
+const auth = require("./src/auth");
+
+global.my_io = socket.io;
 
 /* AUTH */
 
