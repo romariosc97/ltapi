@@ -5,7 +5,7 @@ module.exports = async (params) => {
 
   try {
     let room = params.session.salesforce.auth_response.id;
-    my_io.to(room).emit("test", 'finally deploy'); 
+    // my_io.to(room).emit("test", 'finally deploy');
     const conn = auth.refreshConnection(params.session)
     return await s3.downloadAndDeployTemplate(conn, params)
   } catch (e) {

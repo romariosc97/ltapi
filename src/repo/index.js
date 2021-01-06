@@ -78,8 +78,6 @@ const getTemplateManifest = async (params) => {
   const results = await getObject(bucket, file),
         manifest = JSON.parse(results.Body.toString("utf-8"));
 
-
-
   return manifest
     .sort((a, b) => {
       if (a.template.label < b.template.label)

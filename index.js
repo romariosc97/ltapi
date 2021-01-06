@@ -16,15 +16,15 @@ const config = require("./config"),
       util = require("./src/utils"),
       repo = require("./src/repo"),
       auth = require("./src/auth"),
-      logger = require("./src/logger");
+      logger = require("./src/logger")
+      socketio = require("./src/socket"),
+      router = require("./src/router")
+      agenda = require("./src/agenda");
 
 const app = express()
 
 app
-  .use(cors({
-    origin: "*",
-    credentials: true
-  }))
+  .use(cors(config.corsOptions))
   .use(express.json())
   .use(express.urlencoded({ extended: true }))
   .use(auth.session)
@@ -33,17 +33,12 @@ app
   .use(logger)
 
 const server = app.listen(process.env.PORT || 8080, async () => {
-  await agenda.queue.start()
+  await agenda.start()
   util.connectToDb()
 })
 
-
-const socket = require("./src/socket")(server);
-const router = require("./src/router")(socket.io);
-const agenda = require("./src/agenda")(socket.io);
-
-
-global.my_io = socket.io;
+const socket = socketio(server);
+global.io = socket;
 
 /* ORG FOLDERS, DATASETS, DATAFLOWS, TEMPLATES */
 

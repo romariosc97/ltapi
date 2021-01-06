@@ -4,6 +4,7 @@ const lt_api = require("./lowtide_api"),
       sf_api = require("./salesforce_api"),
       sfRestApiVersion = require("./salesforce_rest"),
       deployOptions = require("./deploy_options"),
+      corsOptions = require("./cors"),
       awsConfig = require("./aws");
 
 const generateSfApiEndpoint = (session, endpoint) => {
@@ -17,9 +18,10 @@ const generateLtApiEndpoint = (endpoint) => {
 }
 
 module.exports = {
-  awsConfig,
-  sfRestApiVersion,
-  deployOptions,
   ltApi: generateLtApiEndpoint,
   sfApi: generateSfApiEndpoint,
+  awsConfig,
+  corsOptions,
+  deployOptions,
+  sfRestApiVersion
 }

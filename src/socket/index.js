@@ -9,10 +9,10 @@ module.exports = (server) => {
 
   const io = sock(server, socketOptions)
 
-  io.on('connection', (socket) => {
-    console.log('New socket connection.')
-  })
+  // io.on('connection', (socket) => {
+  //   console.log('New socket connection.')
+  // })
 
-  return { io: io }
+  return io
 
 }
