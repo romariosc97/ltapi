@@ -1,14 +1,16 @@
 {
-  
+
   "all" : "*",
   "auth_required" : "/api/*",
 
   "auth" : "/api/auth/*",
+  "auth_login": "/api/auth/login",
+  "auth_sfdc": "/api/auth/sfdc",
+  "auth_oauth": "/api/auth/oauth",
+  "auth_callback": "/api/auth/callback",
+  "auth_session": "/api/auth/session",
+  "auth_revoke": "/api/auth/revoke",
 
-  "auth_request" : "/api/auth",
-  "auth_callback" : "/api/auth/callback",
-  "auth_revoke" : "/api/auth/revoke",
-  "auth_session" : "/api/auth/session",
 
   "org" : "/api/org/*",
 
