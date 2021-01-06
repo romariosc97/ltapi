@@ -5,8 +5,6 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "update-beta": "node scripts/update_repo.js --branch beta",
-    "update-master": "node scripts/update_repo.js --branch master",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Luc Iyer <luciyer@gmail.com>",
