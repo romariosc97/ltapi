@@ -1,4 +1,4 @@
 module.exports = {
-  origin: true,
+  origin: "*",
   credentials: true
 }

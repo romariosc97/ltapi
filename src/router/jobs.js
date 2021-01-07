@@ -25,7 +25,7 @@ const checkSessionJobs = async (req, res) => {
     const sessionJobs = req.session.jobs.map(j => {
       return new ObjectId(j.job_id)
     })
-    my_io.emit("test", 'ola');
+
     const jobResults = await agenda.queue.jobs({ _id: { $in: sessionJobs } });
 
     if (jobResults && jobResults.length > 0) {

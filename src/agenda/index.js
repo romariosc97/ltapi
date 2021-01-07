@@ -51,9 +51,6 @@ queue.define("deploy_s3_templates", async job => {
   console.log("Running job deploy_s3_templates...")
   const params = job.attrs.data
   const job_result = await jobs.deployS3Templates(params)
-  let room = params.session.salesforce.auth_response.id;
-  // my_io.to(room).emit('deploy', job_result);
-  // my_io.to(room).emit("FromAPI", job_result);
   job.attrs.job_result = job_result
   console.log("Finished job deploy_s3_templates.")
 })

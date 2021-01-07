@@ -4,6 +4,7 @@ const s3 = require(appRoot + "/src/repo")
 module.exports = async (params) => {
 
   try {
+    console.log("here")
     console.log(params, params.session)
     const conn = auth.refreshConnection(params.session)
     return await s3.downloadAndDeployTemplate(conn, params)

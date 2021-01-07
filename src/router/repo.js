@@ -2,6 +2,7 @@ const repo = require(appRoot + "/src/repo"),
       validation = require("./validation");
 
 const agenda = require(appRoot + "/src/agenda")
+const { deployQueue } = require(appRoot + "/src/queue")
 
 const getTemplates = async (req, res) => {
 
@@ -34,23 +35,28 @@ const deployFromS3 = async (req, res) => {
     branch: req.params.branch,
     template_keys: req.body.templates
   }
-  console.log('Empieza el deploy')
-  const deploy = await agenda.queue.now("deploy_s3_templates", params)
 
-  const jobInfo = {
-    job_name: "Deploy Operation",
-    job_details: {
-      branch: req.params.branch,
-      templates: req.body.templates
-    },
-    job_id: deploy.attrs._id,
-    run_at: deploy.attrs.nextRunAt
+  io.to(req.session.socketRoom).emit('jobUpdate', 'Starting Deploy.')
+
+  try {
+    const result = await deployQueue.add(params)
+
+    const jobInfo = {
+      job_name: "Deploy Operation",
+      job_details: {
+        branch: req.params.branch,
+        templates: req.body.templates
+      },
+      job_id: result.id,
+      run_at: result.timestamp
+    }
+
+    req.session.jobs.push(jobInfo)
+    res.status(200).json(jobInfo)
+
+  } catch (error) {
+    res.status(500).json(error)
   }
-
-  req.session.jobs.push(jobInfo)
-
-  res.status(200).json(jobInfo)
-
 
 }
 

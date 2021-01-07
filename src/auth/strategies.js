@@ -29,17 +29,14 @@ const salesforceInfo = async (connection) => {
 const handleSuccess = async (req, res, connection) => {
 
   req.session.salesforce = await salesforceInfo(connection)
-
   req.session.socketRoom = req.session.id
-
-  io.on('connection', (socket) => {
-    socket.join(roomId)
-  })
+  req.session.jobs = []
 
   const { api, auth, user } = req.session.salesforce
   return res.status(200).json({
     message: `Logged in as ${user.name} at ${auth.instanceUrl} (API v${api.version})`
   })
+
 }
 
 const handleError = (res, error, code) => {

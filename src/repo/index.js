@@ -69,8 +69,8 @@ const getTemplateManifest = async (params) => {
 
   const { branch, org_api } = params
 
-  const bucket = config.aws.bucket.name,
-        subfolder = config.aws.bucket.folders.manifest,
+  const bucket = config.awsConfig.bucket.name,
+        subfolder = config.awsConfig.bucket.folders.manifest,
         file = `${subfolder}${branch}.json`;
 
   console.log(branch, bucket, subfolder, file, org_api)
@@ -105,8 +105,8 @@ const downloadAndDeployTemplate = async (conn, params) => {
 
   const { session, branch, template_keys } = params
 
-  const bucket = config.aws.bucket.name,
-        subfolder = config.aws.bucket.folders[branch];
+  const bucket = config.awsConfig.bucket.name,
+        subfolder = config.awsConfig.bucket.folders[branch];
 
   conn.metadata.pollInterval = 5 * 1000
   conn.metadata.pollTimeout = 300 * 1000
@@ -114,29 +114,38 @@ const downloadAndDeployTemplate = async (conn, params) => {
   return Promise.allSettled(
     template_keys.map(template => {
 
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
 
         console.log(`Streaming ${template} to ${conn.instanceUrl}`)
 
         const zip_stream = getStream(bucket, template)
 
-        zip_stream.on("error", (error) => {
-          console.error(error)
-          reject(error)
-        })
+        zip_stream
+          .on("error", (error) => {
+            console.error(error)
+            io.to(session.socketRoom).emit('jobUpdate', 'Unable to open S3 read stream for template.')
+            reject(error)
+          })
 
-        let deploy = conn.metadata.deploy(zip_stream, config.deploy_options)
+        zip_stream
+          .on("success", (response) => {
+            console.log(response)
+            io.to(session.socketRoom).emit('jobUpdate', 'Loaded template to local memory.')
+          })
 
-        deploy.complete(true, (error, result) => {
+        const deploy = conn.metadata.deploy(zip_stream, config.deployOptions)
+
+        deploy.complete((error, result) => {
           if (!error) {
             console.log(result)
+            io.to(session.socketRoom).emit('jobUpdate', 'Successfully deployed a template.')
             resolve(result)
           } else {
             console.error(error)
+            io.to(session.socketRoom).emit('jobUpdate', 'Template deploy failed.')
             reject(error)
           }
         })
-
 
       })
 

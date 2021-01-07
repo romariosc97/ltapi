@@ -1,14 +1,12 @@
 require("dotenv").config()
-const cors = require('cors');
 
 const fs = require("fs"),
       path = require("path"),
       jsforce = require("jsforce"),
       express = require("express"),
-      mongoose = require("mongoose"),
-    { v4: uuidv4 } = require("uuid"),
+      cors = require("cors"),
       session = require("express-session"),
-      MongoStore = require("connect-mongo")(session);
+      socketSession = require("express-socket.io-session");
 
 global.appRoot = path.resolve(__dirname)
 
@@ -19,11 +17,13 @@ const config = require("./config"),
       logger = require("./src/logger")
       socketio = require("socket.io"),
       router = require("./src/router")
-      agenda = require("./src/agenda");
+      agenda = require("./src/agenda"),
+      queue = require("./src/queue");
 
 const app = express()
 
 app
+  .use(cors(config.corsOptions))
   .use(express.json())
   .use(express.urlencoded({ extended: true }))
   .use(auth.session)
@@ -32,15 +32,24 @@ app
   .use(logger)
 
 const server = app.listen(process.env.PORT || 8080, async () => {
-  await agenda.start()
-  util.connectToDb()
+  await agenda.on('ready', async () => {
+    await agenda.start()
+  })
+  await util.connectToDb()
 })
 
-const io = require("socket.io")(server)
-// global.io = socket;
+global.io = socketio(server)
+
+io.use(socketSession(auth.session))
 
 io.on('connection', socket => {
-  console.log('connected client')
+
+  socket.on('subscribeToJobUpdates', (providedId) => {
+    const sessionId = providedId || socket.handshake.session.socketRoom
+    console.log('Subscribing to updates, roomId:', sessionId)
+    socket.join(sessionId)
+  })
+
 })
 
 /* ORG FOLDERS, DATASETS, DATAFLOWS, TEMPLATES */
@@ -96,10 +105,10 @@ app.route(config.ltApi("session_jobs"))
   .get(router.jobs.checkSessionJobs)
 
 app.get("/", (_, res) => {
-  res.sendStatus(200);
+  res.sendFile(__dirname + '/public/home.html');
 })
 
 app.get("/test", async (req, res) => {
-  await agenda.now("upload_logs")
+  // await agenda.now("upload_logs")
   res.sendStatus(200)
 })

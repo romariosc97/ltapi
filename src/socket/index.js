@@ -3,16 +3,11 @@ const http = require("http"),
 
 module.exports = (server) => {
 
-  const socketOptions = {}
+  const socketOptions = {
+    cors: { origin: "*" }
+  }
 
   const io = sock(server, socketOptions)
-
-  io.on('connection', socket => {
-    console.log("client connected. Assigning room...")
-    socket.on('setSessionRoom', (sessionId) => {
-      socket.join(roomId)
-    })
-  })
 
   return io
 
