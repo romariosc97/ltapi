@@ -37,7 +37,10 @@ const server = app.listen(process.env.PORT || 8080, async () => {
   util.connectToDb()
 })
 
-const socket = socketio(server);
+
+const http = require('http').Server(app);
+
+const socket = socketio(http);
 global.io = socket;
 
 /* ORG FOLDERS, DATASETS, DATAFLOWS, TEMPLATES */
