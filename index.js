@@ -17,7 +17,7 @@ const config = require("./config"),
       repo = require("./src/repo"),
       auth = require("./src/auth"),
       logger = require("./src/logger")
-      socketio = require("./src/socket"),
+      socketio = require("socket.io"),
       router = require("./src/router")
       agenda = require("./src/agenda");
 
@@ -37,11 +37,12 @@ const server = app.listen(process.env.PORT || 8080, async () => {
   util.connectToDb()
 })
 
+const io = require("socket.io")(server)
+// global.io = socket;
 
-const http = require('http').Server(app);
-
-const socket = socketio(http);
-global.io = socket;
+io.on('connection', socket => {
+  console.log('connected client')
+})
 
 /* ORG FOLDERS, DATASETS, DATAFLOWS, TEMPLATES */
 
