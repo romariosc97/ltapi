@@ -9,9 +9,12 @@ module.exports = (server) => {
 
   const io = sock(server, socketOptions)
 
-  // io.on('connection', (socket) => {
-  //   console.log('New socket connection.')
-  // })
+  io.on('connection', socket => {
+    console.log("Client connected. Assigning room...")
+    socket.on('setSessionRoom', (sessionId) => {
+      socket.join(roomId)
+    })
+  })
 
   return io
 
