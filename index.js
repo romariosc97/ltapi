@@ -16,9 +16,7 @@ const config = require("./config"),
       auth = require("./src/auth"),
       logger = require("./src/logger")
       socketio = require("socket.io"),
-      router = require("./src/router")
-      agenda = require("./src/agenda"),
-      queue = require("./src/queue");
+      router = require("./src/router");
 
 const app = express()
 
@@ -29,14 +27,8 @@ app
   .use(auth.session)
   .use("/api/*", auth.required)
   .use(auth.middleware)
-  .use(logger)
 
-const server = app.listen(process.env.PORT || 8080, async () => {
-  await agenda.on('ready', async () => {
-    await agenda.start()
-  })
-  await util.connectToDb()
-})
+const server = app.listen(process.env.PORT || 8080)
 
 global.io = socketio(server)
 
@@ -106,9 +98,4 @@ app.route(config.ltApi("session_jobs"))
 
 app.get("/", (_, res) => {
   res.sendFile(__dirname + '/public/home.html');
-})
-
-app.get("/test", async (req, res) => {
-  // await agenda.now("upload_logs")
-  res.sendStatus(200)
 })

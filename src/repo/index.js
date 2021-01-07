@@ -122,15 +122,15 @@ const downloadAndDeployTemplate = async (conn, params) => {
 
         zip_stream
           .on("error", (error) => {
-            console.error(error)
-            io.to(session.socketRoom).emit('jobUpdate', 'Unable to open S3 read stream for template.')
-            reject(error)
+            console.error(error.message)
+            io.to(session.socketRoom).emit('jobUpdate', { message: `S3 error: ${error.message}.` })
+            reject(error.message)
           })
 
         zip_stream
           .on("success", (response) => {
             console.log(response)
-            io.to(session.socketRoom).emit('jobUpdate', 'Loaded template to local memory.')
+            io.to(session.socketRoom).emit('jobUpdate', { message: 'Loaded template to local memory.' })
           })
 
         const deploy = conn.metadata.deploy(zip_stream, config.deployOptions)
@@ -138,12 +138,12 @@ const downloadAndDeployTemplate = async (conn, params) => {
         deploy.complete((error, result) => {
           if (!error) {
             console.log(result)
-            io.to(session.socketRoom).emit('jobUpdate', 'Successfully deployed a template.')
+            io.to(session.socketRoom).emit('jobUpdate', { message: 'Successfully deployed a template.' })
             resolve(result)
           } else {
-            console.error(error)
-            io.to(session.socketRoom).emit('jobUpdate', 'Template deploy failed.')
-            reject(error)
+            console.error(error.message)
+            io.to(session.socketRoom).emit('jobUpdate', { message: 'Template deploy failed.' })
+            reject(error.message)
           }
         })
 

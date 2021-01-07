@@ -2,7 +2,7 @@ const repo = require(appRoot + "/src/repo"),
       validation = require("./validation");
 
 const agenda = require(appRoot + "/src/agenda")
-const { deployQueue } = require(appRoot + "/src/queue")
+const queue = require(appRoot + "/src/queue")
 
 const getTemplates = async (req, res) => {
 
@@ -36,10 +36,10 @@ const deployFromS3 = async (req, res) => {
     template_keys: req.body.templates
   }
 
-  io.to(req.session.socketRoom).emit('jobUpdate', 'Starting Deploy.')
+  io.to(req.session.socketRoom).emit('jobUpdate', 'Starting Template Deploy.')
 
   try {
-    const result = await deployQueue.add(params)
+    const result = await queue.add('template_deploy', params)
 
     const jobInfo = {
       job_name: "Deploy Operation",
@@ -48,7 +48,7 @@ const deployFromS3 = async (req, res) => {
         templates: req.body.templates
       },
       job_id: result.id,
-      run_at: result.timestamp
+      run_at: new Date(result.timestamp)
     }
 
     req.session.jobs.push(jobInfo)
