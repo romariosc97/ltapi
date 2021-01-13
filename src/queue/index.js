@@ -24,7 +24,7 @@ const sendUpdate = (job, message, object) => {
 
 jobQueue.on("completed", (job, result) => {
   console.log(`Job with id ${job.id} has been completed.`)
-  sendUpdate(job, 'Job has completed.', result)
+  sendUpdate(job, 'Job has completed.', { id: job.id, ...result })
 })
 
 jobQueue.on("failed", (job, err) => {

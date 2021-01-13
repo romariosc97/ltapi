@@ -35,13 +35,11 @@ global.io = socketio(server)
 io.use(socketSession(auth.session))
 
 io.on('connection', socket => {
-
   socket.on('subscribeToJobUpdates', (providedId) => {
     const sessionId = providedId || socket.handshake.session.socketRoom
     console.log('Subscribing to updates, roomId:', sessionId)
     socket.join(sessionId)
   })
-
 })
 
 /* ORG FOLDERS, DATASETS, DATAFLOWS, TEMPLATES */

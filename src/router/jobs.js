@@ -1,11 +1,18 @@
-const ObjectId = require("mongodb").ObjectID
+const queue = require("../queue")
 
 const formatResponse = (job) => {
+
+  const { session, ...rest } = job.data
+
   return {
-    name: job.attrs.name,
-    run_at: job.attrs.lastRunAt,
-    done_at: job.attrs.lastFinishedAt,
-    result: job.attrs.job_result
+    id: job.id,
+    name: job.name,
+    data: rest,
+    queuedAt: new Date(job.timestamp),
+    runAt: new Date(job.processedOn),
+    doneAt: new Date(job.finishedOn),
+    result: job.returnvalue,
+    failed: job.failedReason
   }
 }
 
@@ -20,13 +27,12 @@ const checkSessionJobs = async (req, res) => {
     let formattedResults;
 
     if (req.session.jobs.length === 0)
-      return res.status(422).json("No jobs found on session.")
+      return res.status(200).json([])
 
-    const sessionJobs = req.session.jobs.map(j => {
-      return new ObjectId(j.job_id)
-    })
+    const sessionJobs = req.session.jobs.map(d => d.job_id)
 
-    const jobResults = await agenda.queue.jobs({ _id: { $in: sessionJobs } });
+    const allCurrentJobs = await queue.getJobs(['active', 'completed'])
+    const jobResults = allCurrentJobs.filter(d => sessionJobs.includes(d.id))
 
     if (jobResults && jobResults.length > 0) {
       formattedResults = jobResults.map(formatResponse)
