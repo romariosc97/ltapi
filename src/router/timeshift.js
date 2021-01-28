@@ -4,7 +4,7 @@ exports.shiftDatasets = async (req, res) => {
 
   const params = {
     session: req.session,
-    datasetArray: req.body
+    ...req.body
   }
 
   io.to(req.session.socketRoom).emit('jobUpdate', 'Starting Timeshift Operation.')
@@ -16,7 +16,7 @@ exports.shiftDatasets = async (req, res) => {
     const jobInfo = {
       job_name: "Timeshift Operation",
       job_details: {
-        datasets: req.body
+        params: req.body
       },
       job_id: result.id,
       run_at: new Date(result.timestamp)

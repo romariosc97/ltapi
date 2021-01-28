@@ -21,6 +21,14 @@ const parsePromises = (settledArray, session = null, message = null) => {
 
 }
 
+exports.refreshDatasets = async (conn, params) => {
+
+  const { datasetArray } = params
+
+  // run touch then set for x minutes later to run ts generation logic
+
+}
+
 exports.generateTimeshiftDataflow = async (conn, params) => {
 
   let mergeBranches = (branchArray) => {
@@ -28,6 +36,32 @@ exports.generateTimeshiftDataflow = async (conn, params) => {
     for (const b of branchArray) {
       Object.assign(def, b.object)
     } return def
+  }
+
+  let createDataflow = async (conn, folderLabel, folderApiName, isPrimer = true) => {
+
+    const lowtideTsDf = 'LTTS',
+          primerDev = isPrimer ? 'PRIMER_' : '',
+          primer = isPrimer ? 'PRIMER' : '';
+
+    const devName = `${lowtideTsDf}_TSDF_${primerDev}${folderApiName}`,
+          tsLabel = `${folderLabel} Timeshift Dataflow ${primer}`;
+
+    const dfCreate = await org.createDataflow(conn, {
+      DeveloperName: devName.trim(),
+      MasterLabel: tsLabel.trim(),
+      State: 'Active'
+    })
+
+    const dfvCreate = await org.createDataflowVersion(conn, {
+      DataflowId: dfCreate.id,
+      DataflowDefinition: dataflowString
+    })
+
+    const dfvAssign = await org.assignDataflowVersion(conn, dfCreate.id, dfvCreate.id)
+
+    return { devName, tsLabel, dfCreate, dfvCreate, dfvAssign }
+
   }
 
   const { session, folderApiName, folderLabel, datasetArray } = params
@@ -44,17 +78,12 @@ exports.generateTimeshiftDataflow = async (conn, params) => {
   sendMessage(session, 'timeshiftUpdate', 'Date Values Parsed', parsedResults)
 
   const generatedBranches = Object.entries(parsedResults).map(([key, dataset]) => {
-
-
-    const branchSettings = {
+    return new Dataflow.Branch({
       inputDataset: key,
       dateFields: dataset.fieldData,
       seedDate: dataset.suggestedDate,
       primer: true
-    }
-
-    return new Dataflow.Branch(branchSettings)
-
+    })
   })
 
   const dataflowObject = mergeBranches(generatedBranches),
@@ -62,23 +91,20 @@ exports.generateTimeshiftDataflow = async (conn, params) => {
 
   try {
 
-    const dfCreate = await org.createDataflow(conn, {
-      DeveloperName: 'Test_TS_Dataflow1',
-      MasterLabel: 'Test Timeshift Dataflow 1',
-      State: 'Active'
-    })
+    const primerDataflow = await createDataflow(conn, folderLabel, folderApiName)
+    sendMessage(session, 'timeshiftUpdate', 'Created Primer Dataflow', primerDataflow)
 
-    const dfvCreate = await org.createDataflowVersion(conn, {
-      DataflowId: dfCreate.id,
-      DataflowDefinition: dataflowString
-    })
+    const ongoingDataflow = await createDataflow(conn, folderLabel, folderApiName, false)
+    sendMessage(session, 'timeshiftUpdate', 'Created Ongoing Dataflow', ongoingDataflow)
 
-    const dfvAssign = await org.assignDataflowVersion(conn, dfCreate.id, dfvCreate.id)
+    const dfRun = await org.execRunDataflow(conn, session, primerDataflow.dfCreate.id)
+    sendMessage(session, 'timeshiftUpdate', 'Running Primer Dataflow', dfRun)
 
     return {
       success: true,
-      dataflowId: dfCreate.id,
-      dataflowVersionId: dfvCreate.id
+      primerDataflow,
+      ongoingDataflow,
+      dfRun
     }
 
   } catch (error) {

@@ -27,7 +27,7 @@ class Branch {
 
   get calcEpoch () { return this.lpd.getTime() / 1e3; }
 
-  get elapsedExp () {
+  get staticExp () {
     return `86400 * date_diff("day", toDate(${this.calcEpoch}), now())`;
   }
 
@@ -42,10 +42,10 @@ class Branch {
   computeDates(source) {
     const computedFields = this.fields
       .map(d => new ComputedField("Date", this.termAux(d.fieldApiName), null, this.termEpoch(d.fieldApiName)));
-    // if primer
-    computedFields.push(new ComputedField("Numeric", "ElapsedSeconds", null, this.elapsedExp))
-    //else
-      //...
+    if (this.generateEpoch)
+      computedFields.push(new ComputedField("Numeric", "ElapsedSeconds", null, this.staticExp))
+    else
+      computedFields.push(new ComputedField("Numeric", "ElapsedSeconds", null, this.dynamicExp))
 
     return new Compute(this.seedName("Compute_Aux"), source, computedFields)
   }
