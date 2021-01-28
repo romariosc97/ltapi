@@ -97,3 +97,6 @@ app.route(config.ltApi("session_jobs"))
 app.get("/", (_, res) => {
   res.sendFile(__dirname + '/public/home.html');
 })
+
+app.route(config.ltApi("timeshift_array"))
+  .post(router.timeshift.shiftDatasets)

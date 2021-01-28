@@ -1,14 +1,2 @@
-const http = require("http"),
-      sock = require("socket.io");
-
-module.exports = (server) => {
-
-  const socketOptions = {
-    cors: { origin: "*" }
-  }
-
-  const io = sock(server, socketOptions)
-
-  return io
-
-}
+module.exports = (session, type, message, payload) =>
+  io.to(session.socketRoom).emit(type, { message, payload });

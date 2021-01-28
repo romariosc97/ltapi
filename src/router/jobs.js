@@ -14,6 +14,7 @@ const formatResponse = (job) => {
     result: job.returnvalue,
     failed: job.failedReason
   }
+
 }
 
 const agenda = require(appRoot + "/src/agenda")
@@ -24,7 +25,7 @@ const checkSessionJobs = async (req, res) => {
 
   try {
 
-    let formattedResults;
+    let formattedResults = [];
 
     if (req.session.jobs.length === 0)
       return res.status(200).json([])
@@ -36,10 +37,9 @@ const checkSessionJobs = async (req, res) => {
 
     if (jobResults && jobResults.length > 0) {
       formattedResults = jobResults.map(formatResponse)
-      return res.status(200).json(formattedResults)
-    } else {
-      return res.status(500).json("Jobs not found in database.")
     }
+
+    return res.status(200).json(formattedResults)
 
   } catch (e) {
     console.error(e.message)
