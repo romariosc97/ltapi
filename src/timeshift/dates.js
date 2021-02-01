@@ -117,13 +117,13 @@ const suggestDates = (fieldList) => {
     const today = new Date(),
           latestDate = returnedDateArray[0],
           suggestedDate = latestDate > today ? today : latestDate,
-          suggestDateString = dateToString(suggestedDate);
+          suggestedDateString = dateToString(suggestedDate);
 
     parsedResults[d] = {
       fieldData: dataset,
       latestDate,
       suggestedDate,
-      suggestDateString
+      suggestedDateString
     }
 
   })
