@@ -58,7 +58,6 @@ app.route(config.ltApi("org_datasets_refresh"))
 
 app.route(config.ltApi("org_dataflows"))
   .get(router.org.getOrgDataflows)
-  .post(router.timeshift.dataflowOperation)
 
 app.route(config.ltApi("org_dataflows_ts"))
   .get(router.org.getOrgTsDataflows)
@@ -81,6 +80,9 @@ app.route(config.ltApi("org_template_single"))
   .get(router.org.getSingleOrgTemplate)
   .delete(router.org.deleteSingleOrgTemplate)
 
+app.route(config.ltApi("timeshift_array"))
+  .post(router.timeshift.shiftDatasets)
+
 /* SERVER REPOSITORY: TEMPLATES */
 
 app.route(config.ltApi("repo_templates"))
@@ -91,15 +93,5 @@ app.route(config.ltApi("repo_template_deploy"))
 
 /* ASYNC JOB QUEUE */
 
-app.route(config.ltApi("job_status"))
-  .get(router.jobs.getStatus)
-
 app.route(config.ltApi("session_jobs"))
   .get(router.jobs.checkSessionJobs)
-
-app.get("/", (_, res) => {
-  res.sendFile(__dirname + '/public/home.html');
-})
-
-app.route(config.ltApi("timeshift_array"))
-  .post(router.timeshift.shiftDatasets)

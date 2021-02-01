@@ -1,7 +1,5 @@
-const org = require(appRoot + "/src/org")
-const agenda = require(appRoot + "/src/agenda")
-
-const auth = require(appRoot + "/src/auth");
+const org = require(appRoot + "/src/org"),
+      auth = require(appRoot + "/src/auth");
 
 const getOrgFolders = async (req, res) => {
 
@@ -151,14 +149,7 @@ const updateTemplateFromApp = async (req, res) => {
 
 const refreshDatasets = async (req, res) => {
 
-  const refresh = await agenda.now("refresh_datasets", req.session)
-
-  res.status(200).json({
-    refresh: {
-      job_id: refresh.attrs._id,
-      run_at: refresh.attrs.nextRunAt
-    }
-  })
+  // implement with bull
 
 }
 
@@ -169,14 +160,7 @@ const runDataflow = async (req, res) => {
     dataflow_id: req.params.dataflow_id
   }
 
-  const refresh = await agenda.now("run_dataflow", params)
-
-  res.status(200).json({
-    refresh: {
-      job_id: refresh.attrs._id,
-      run_at: refresh.attrs.nextRunAt
-    }
-  })
+  // implement with bull
 
 }
 
