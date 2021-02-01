@@ -26,8 +26,14 @@ const sendUpdate = (job, message, object) => {
 }
 
 jobQueue.on("completed", (job, result) => {
-  console.log(`Job with ID ${job.id} has been completed.`)
-  sendUpdate(job, 'Job has completed.', { id: job.id, ...result })
+  console.log(`Job with id ${job.id} has been completed.`)
+  //sendUpdate(job, 'Job has completed.', { id: job.id, ...result })
+  io.to(job.data.session.socketRoom).emit('jobEnded', {
+    message: 'Job has completed.', 
+    id: job.id, 
+    result: result,
+    template_keys: job.data.template_keys
+  })
 })
 
 jobQueue.on("failed", (job, err) => {
