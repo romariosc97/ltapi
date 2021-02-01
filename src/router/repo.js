@@ -39,6 +39,7 @@ const deployFromS3 = async (req, res) => {
   io.to(req.session.socketRoom).emit('jobUpdate', 'Starting Template Deploy.')
 
   try {
+    
     const result = await queue.add('template_deploy', params)
 
     const jobInfo = {

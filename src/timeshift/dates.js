@@ -1,125 +1,139 @@
 const config = require(appRoot + "/config")
 
-class LatestDateQuery {
+const { LatestDateQuery, BatchQuery } = require("./classes")
 
-  constructor(dataset_id, dataset_version_id, field) {
-    this.field = field;
-    this.load = `q = load \"${dataset_id}/${dataset_version_id}\";`;
-    this.foreach = `q = foreach q generate '${field}_Year' + \"-\" + '${field}_Month' + \"-\" + '${field}_Day' as '__Latest_YMD', count() as 'count';`;
-    this.order = `q = order q by '__Latest_YMD' desc;`;
-    this.limit = `q = limit q 1;`;
+const getDateFields = async (conn, session, dsId) => {
 
-    this.query = { "query" : `${this.load} ${this.foreach} ${this.order} ${this.limit}` };
+  try {
 
+    let dsEndpoint = (dsId) => config.sfApi(session, "wave_datasets") + `/${dsId}`
+
+    const endpoint = dsEndpoint(dsId)
+    const dataset = await conn.request(endpoint)
+    const datasetVersion = await conn.request(dataset.currentVersionUrl)
+
+    return datasetVersion.xmdMain.dates.map(field => ({
+      folderId: dataset.folder.id,
+      folderApiName: dataset.folder.name,
+      folderLabel: dataset.folder.label,
+      datasetId: dataset.id,
+      datasetApiName: dataset.name,
+      datasetLabel: dataset.label,
+      datasetVersionId: datasetVersion.id,
+      fieldApiName: field.fields.fullField,
+      fieldLabel: field.label
+    }))
+
+  } catch (error) {
+    const { errorCode, message } = error
+    return Promise.reject({
+      type: 'retrieve_dataset',
+      status: 'error',
+      errorCode,
+      message
+    })
   }
 
-  get json() {
-    return JSON.stringify(this.query);
+}
+
+const gatherDateFields = async (conn, session, datasetArray) => {
+  const dateFieldDataPromises = datasetArray.map(d => getDateFields(conn, session, d))
+  return Promise.allSettled(dateFieldDataPromises)
+}
+
+const sendDateQuery = async (conn, session, flatFieldData) => {
+
+  const { datasetId, datasetVersionId, fieldApiName } = flatFieldData
+
+  try {
+
+    if (fieldApiName === 'LastProcessedDate')
+      return Promise.reject({
+        type: 'retrieve_field',
+        status: 'ignored',
+        message: 'LastProcessedDate is not available for timeshifting.',
+        ...flatFieldData
+      })
+
+    const latestDateQuery = new LatestDateQuery(datasetId, datasetVersionId, fieldApiName)
+    const queryResponse = await conn.requestPost(config.sfApi(session, "wave_query"), latestDateQuery.query)
+    const latestYmd = queryResponse.results.records[0].__Latest_YMD || null
+
+    return { ...flatFieldData, latestYmd }
+
+  } catch (error) {
+    const { errorCode, message } = error
+    return Promise.reject({
+      type: 'retrieve_field',
+      status: 'error',
+      errorCode,
+      message,
+      ...flatFieldData
+    })
   }
 
 }
 
-const dateToString = (d) => {
-  var mm = d.getUTCMonth() < 9 ? `0${d.getUTCMonth() + 1}` : d.getUTCMonth() + 1;
-  var dd = d.getUTCDate() < 10 ? `0${d.getUTCDate()}` : d.getUTCDate();
-  return `${d.getUTCFullYear()}-${mm}-${dd}`;
-}
+const gatherDateValues = async (conn, session, fieldData) => {
 
-const getApiName = (d) => { return d.api_name }
+  const endpoint = config.sfApi(session, "wave_query")
+  const queryList = fieldData.map(d => new LatestDateQuery(d))
+  const batchQuery = new BatchQuery(conn, endpoint, queryList)
 
-const validateDateFields = (field_list) => {
+  await batchQuery.execute()
 
-  console.log("Validating Date Fields...")
-
-  if (!field_list || field_list.length === 0)
-    return "No date columns found."
-
-  if (field_list.map(getApiName).includes("LastProcessedDate"))
-    return "Found LastProcessedDate column."
-
-  return true
+  return batchQuery.results
 
 }
 
-const getDateFields = (conn, session, ds_id) => {
+const suggestDates = (fieldList) => {
 
-  const dataset_endpoint = config.sfApi(session, "wave_datasets") + "/" + ds_id
+  let groupByKey = (list, key) => list.reduce((hash, obj) =>
+    ({...hash, [obj[key]]:( hash[obj[key]] || [] ).concat(obj)}), {})
 
-  return conn.request(dataset_endpoint)
-    .then(response => {
+  let dateToString = (d) => {
+    var mm = d.getUTCMonth() < 9 ? `0${d.getUTCMonth() + 1}` : d.getUTCMonth() + 1;
+    var dd = d.getUTCDate() < 10 ? `0${d.getUTCDate()}` : d.getUTCDate();
+    return `${d.getUTCFullYear()}-${mm}-${dd}`;
+  }
 
-      const dataset_name = response.name
+  const groupedQueryResults = groupByKey(fieldList, 'datasetApiName'),
+        datasetKeys = Object.keys(groupedQueryResults),
+        parsedResults = {};
 
-      return conn.request(response.currentVersionUrl)
-        .then(response => {
+  datasetKeys.forEach(d => {
 
-          return {
-            dataset_id: response.dataset.id,
-            version_id: response.id,
-            dataset_name: dataset_name,
-            date_fields: response.xmdMain.dates
-          }
-        })
-        .catch(error => {
-          throw new Error(error.message)
-        })
+    const dataset = groupedQueryResults[d]
 
-    })
-    .catch(error => {
-      console.error(error.message)
-      throw new Error(error.message)
-    })
+    const returnedDateArray = dataset
+      .map(d => {
+        const { records } = d.queryResult.results
+        if (records.length && records[0].__Latest_YMD)
+          return new Date(records[0].__Latest_YMD)
+      })
+      .filter(d => d)
+      .sort().reverse()
 
-}
+    const today = new Date(),
+          latestDate = returnedDateArray[0],
+          suggestedDate = latestDate > today ? today : latestDate,
+          suggestedDateString = dateToString(suggestedDate);
 
-const executeQuery = (conn, session, dataset_info, field_info) => {
+    parsedResults[d] = {
+      fieldData: dataset,
+      latestDate,
+      suggestedDate,
+      suggestedDateString
+    }
 
-  const query_object = new LatestDateQuery(
-    dataset_info.dataset_id,
-    dataset_info.version_id,
-    field_info.fields.fullField
-  )
+  })
 
-  return conn.requestPost(config.sfApi(session, "wave_query"), query_object.query)
-    .then(response => {
-      if (response.results.records[0].__Latest_YMD !== undefined)
-        return {
-          api_name: field_info.fields.fullField,
-          label: field_info.label,
-          date: response.results.records[0].__Latest_YMD
-        }
-      else
-        throw new Error("No date values found in field: " + field_info.fields.fullField).message
-    })
-
-
-}
-
-const getDateValues = (conn, session, dataset_info) => {
-
-  return Promise.allSettled(dataset_info.date_fields.map(field_info => {
-    return executeQuery(conn, session, dataset_info, field_info)
-  }))
-
-}
-
-const parseResults = (result_array) => {
-
-  const dates_found = result_array.filter(d => d.status === "fulfilled"),
-        no_data = result_array.filter(d => d.status === "rejected")
-        date_array = dates_found.map(d => d.value.date).sort().reverse();
-
-  const today = new Date(),
-        latest_date = new Date(date_array[0]),
-        suggested_date = latest_date > today ? dateToString(today) : dateToString(latest_date);
-
-  return { dates_found, no_data, date_array, suggested_date }
+  return parsedResults
 
 }
 
 module.exports = {
-  validateDateFields: validateDateFields,
-  getDateFields: getDateFields,
-  getDateValues: getDateValues,
-  parseResults: parseResults
+  gatherDateFields,
+  gatherDateValues,
+  suggestDates
 }

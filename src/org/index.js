@@ -189,9 +189,9 @@ exports.assignDataflowVersion = (conn, df_id, dfv_id) => {
     })
 }
 
-exports.execRunDataflow = (conn, df_id) => {
+exports.execRunDataflow = (conn, session, df_id) => {
   console.log("Running Dataflow...")
-  const dataflowjobs_endpoint = config.sfApi("wave_dataflowjobs"),
+  const dataflowjobs_endpoint = config.sfApi(session, "wave_dataflowjobs"),
         request_body = { dataflowId: df_id, command: "start" };
   return conn.requestPost(dataflowjobs_endpoint, request_body)
 }

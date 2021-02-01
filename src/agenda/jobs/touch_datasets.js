@@ -28,6 +28,20 @@ class TouchQuery {
   }
 }
 
+// class RefreshQuery {
+//
+//   constructor(datasetId, datasetVersionId) {
+//     this.load = `q = load \"${datasetId}/${datasetVersionId}\";`
+//     this.foreach = `q = foreach q generate count() as 'count';`
+//     this.query = { "query" : `${this.load} ${this.foreach}` }
+//   }
+//
+//   get json() {
+//     return JSON.stringify(this.query)
+//   }
+//
+// }
+
 const getAllDatasets = async (conn) => {
 
   const org_datasets = await org.getDatasets(conn)

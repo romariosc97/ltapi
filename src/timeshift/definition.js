@@ -3,7 +3,7 @@ class Branch {
   constructor({
     input_ds = "input_dataset",
     output_ds = false,
-    lp_date = "2020-01-01",
+    lp_date = "2021-01-01",
     date_fields = []
   }) {
 

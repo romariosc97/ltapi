@@ -2,6 +2,15 @@
 
 ---
 
+### Todo
+
+* Show list of LTTS_TSDF dataflows
+* Dataset refresh before timeshift
+* Dataset refresh according to lastQueriedDate?
+* Catch presence of LastProcessedDate
+* Delete Primer dataflow after run
+* Auto-schedule ongoing dataflow
+
 ### Lowtide-API
 
 ```

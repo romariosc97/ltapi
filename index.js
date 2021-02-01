@@ -35,13 +35,11 @@ global.io = socketio(server)
 io.use(socketSession(auth.session))
 
 io.on('connection', socket => {
-
   socket.on('subscribeToJobUpdates', (providedId) => {
     const sessionId = providedId || socket.handshake.session.socketRoom
     console.log('Subscribing to updates, roomId:', sessionId)
     socket.join(sessionId)
   })
-
 })
 
 /* ORG FOLDERS, DATASETS, DATAFLOWS, TEMPLATES */
@@ -99,3 +97,6 @@ app.route(config.ltApi("session_jobs"))
 app.get("/", (_, res) => {
   res.sendFile(__dirname + '/public/home.html');
 })
+
+app.route(config.ltApi("timeshift_array"))
+  .post(router.timeshift.shiftDatasets)
