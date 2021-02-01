@@ -21,7 +21,7 @@ const config = require("./config"),
 const app = express()
 
 app
-  .use(cors())
+  .use(cors(config.corsOptions))
   .use(express.json())
   .use(express.urlencoded({ extended: true }))
   .use(auth.session)
