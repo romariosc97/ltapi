@@ -54,9 +54,7 @@
   "repo_template_deploy" : "/api/repository/template/:branch/deploy",
   "repo_template_download" : "/api/repository/template/:branch/download",
 
-  "job_status" : "/api/jobs/:job_id",
   "session_jobs": "/api/jobs/session/all"
 
 }
-
 ```
