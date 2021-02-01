@@ -60,6 +60,9 @@ app.route(config.ltApi("org_dataflows"))
   .get(router.org.getOrgDataflows)
   .post(router.timeshift.dataflowOperation)
 
+app.route(config.ltApi("org_dataflows_ts"))
+  .get(router.org.getOrgTsDataflows)
+
 app.route(config.ltApi("org_dataflows_folder"))
   .get(router.org.getOrgDataflows)
 

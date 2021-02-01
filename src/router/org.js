@@ -42,6 +42,17 @@ const getOrgDataflows = async (req, res) => {
 
 }
 
+const getOrgTsDataflows = async (req, res) => {
+  try {
+    const conn = auth.refreshConnection(req.session)
+    const result = await org.getTsDataflows(conn)
+    res.status(200).json(result)
+  } catch (e) {
+    console.error(e)
+    res.status(500).json(e.message)
+  }
+}
+
 const getCurrentDataflowVersion = async (req, res) => {
 
   try {
@@ -173,6 +184,7 @@ module.exports = {
   getOrgFolders: getOrgFolders,
   getOrgDatasets: getOrgDatasets,
   getOrgDataflows: getOrgDataflows,
+  getOrgTsDataflows: getOrgTsDataflows,
   getCurrentDataflowVersion: getCurrentDataflowVersion,
   getOrgTemplates: getOrgTemplates,
   getSingleOrgTemplate: getSingleOrgTemplate,
