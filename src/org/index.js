@@ -47,6 +47,18 @@ exports.getSingleDataflow = async (conn, dataflow_id) => {
 
 }
 
+exports.getTsDataflows = (conn) => {
+
+  console.log("Retrieving LTTS_TSDF Dataflows...")
+
+  return conn
+    .sobject("Dataflow")
+    .find({
+      DeveloperName : { $like : 'LTTS_TSDF%' },
+    })
+
+}
+
 exports.getTemplates = async (conn) => {
 
   console.log("Querying org WaveTemplates...")
