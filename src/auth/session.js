@@ -9,6 +9,7 @@ let redisClient = redis.createClient(process.env.REDIS_URL)
 const sessionOptions = {
   name: "Lowtide",
   secret: process.env.SESSION_SECRET,
+  proxy: true,
   cookie: {
     maxAge: (60 * 60000),
     httpOnly: true,
