@@ -1,7 +1,6 @@
 const repo = require(appRoot + "/src/repo"),
       validation = require("./validation");
 
-const agenda = require(appRoot + "/src/agenda")
 const queue = require(appRoot + "/src/queue")
 
 const getTemplates = async (req, res) => {
@@ -39,7 +38,7 @@ const deployFromS3 = async (req, res) => {
   io.to(req.session.socketRoom).emit('jobUpdate', 'Starting Template Deploy.')
 
   try {
-    
+
     const result = await queue.add('template_deploy', params)
 
     const jobInfo = {

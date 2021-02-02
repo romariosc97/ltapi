@@ -4,7 +4,7 @@
 
 ### Todo
 
-* Show list of LTTS_TSDF dataflows
+* ~~Show list of LTTS_TSDF dataflows~~
 * Dataset refresh before timeshift
 * Dataset refresh according to lastQueriedDate?
 * Catch presence of LastProcessedDate
@@ -36,9 +36,12 @@
   "org_datasets_refresh" : "/api/org/refresh",
 
   "org_dataflows" : "/api/org/dataflow",
+  "org_dataflows_ts": "/api/org/dataflow/timeshift",
   "org_dataflows_folder" : "/api/org/dataflow/:folder_id",
   "org_dataflow_single" : "/api/org/dataflow/single/:dataflow_id",
   "org_dataflows_run" : "/api/org/dataflow/run/:dataflow_id",
+
+  "timeshift_array" : "/api/org/timeshift",
 
   "org_templates" : "/api/org/template",
   "org_template_single" : "/api/org/template/:template_id",
@@ -51,7 +54,6 @@
   "repo_template_deploy" : "/api/repository/template/:branch/deploy",
   "repo_template_download" : "/api/repository/template/:branch/download",
 
-  "job_status" : "/api/jobs/:job_id",
   "session_jobs": "/api/jobs/session/all"
 
 }

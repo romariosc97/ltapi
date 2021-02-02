@@ -17,8 +17,6 @@ const formatResponse = (job) => {
 
 }
 
-const agenda = require(appRoot + "/src/agenda")
-
 const checkSessionJobs = async (req, res) => {
 
   console.log("Check status of jobs on current session.")
@@ -37,9 +35,10 @@ const checkSessionJobs = async (req, res) => {
 
     if (jobResults && jobResults.length > 0) {
       formattedResults = jobResults.map(formatResponse)
+      return res.status(200).json(formattedResults.reverse())
+    } else {
+      return res.status(500).json("Jobs not found in database.")
     }
-
-    return res.status(200).json(formattedResults)
 
   } catch (e) {
     console.error(e.message)
@@ -48,33 +47,6 @@ const checkSessionJobs = async (req, res) => {
 
 }
 
-const getStatus = async (req, res) => {
-
-  const job_id = req.params.job_id
-
-  console.log("Check status of job:", job_id)
-
-  try {
-
-    const filter = { _id: new ObjectId(job_id) },
-          job_list = await agenda.queue.jobs(filter);
-
-    if (job_list && job_list.length > 0) {
-      const result = formatResponse(job_list[0])
-      console.log("Job status:", result)
-      res.status(200).json(result)
-    } else {
-      return res.status(500).json("No job found with that ID.")
-    }
-
-  } catch (e) {
-    console.error(e.message)
-    res.status(500).json(e.message)
-  }
-
-}
-
 module.exports = {
-  getStatus: getStatus,
   checkSessionJobs: checkSessionJobs
 }
