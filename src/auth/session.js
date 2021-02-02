@@ -11,7 +11,8 @@ const sessionOptions = {
   secret: process.env.SESSION_SECRET,
   cookie: {
     maxAge: (60 * 60000),
-    sameSite: 'none'
+    sameSite: 'none',
+    secure: true
   },
   store: new RedisStore({ client: redisClient }),
   saveUninitialized: false,
