@@ -9,7 +9,10 @@ let redisClient = redis.createClient(process.env.REDIS_URL)
 const sessionOptions = {
   name: "lowtide.auth",
   secret: process.env.SESSION_SECRET,
-  cookie: { maxAge: (60 * 60000) },
+  cookie: {
+    maxAge: (60 * 60000),
+    sameSite: 'none'
+  },
   store: new RedisStore({ client: redisClient }),
   saveUninitialized: false,
   resave: false
