@@ -35,9 +35,10 @@ const checkSessionJobs = async (req, res) => {
 
     if (jobResults && jobResults.length > 0) {
       formattedResults = jobResults.map(formatResponse)
+      return res.status(200).json(formattedResults.reverse())
+    } else {
+      return res.status(500).json("Jobs not found in database.")
     }
-
-    return res.status(200).json(formattedResults)
 
   } catch (e) {
     console.error(e.message)
