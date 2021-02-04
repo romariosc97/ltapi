@@ -31,7 +31,8 @@ jobQueue.on("completed", (job, result) => {
     message: 'Job has completed.',
     id: job.id,
     result: result,
-    template_keys: job.data.template_keys || null
+    template_keys: job.data.template_keys || null,
+    data: job.data
   })
 })
 
