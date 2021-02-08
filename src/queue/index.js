@@ -61,7 +61,7 @@ jobQueue.on("stalled", (job) => {
 
 jobQueue.on("progress", (job, progress) => {
   console.log(`Job with ID ${job.id} has progressed.`)
-  sendUpdate(job, 'Job has progressed.', progress)
+  sendUpdate(job, 'Job has progressed.', { job, progress })
 })
 
 jobQueue.on("drained", () => {
