@@ -55,7 +55,13 @@ exports.getTsDataflows = (conn) => {
     .sobject("Dataflow")
     .find({
       DeveloperName : { $like : 'LTTS_TSDF%' },
+      // DeveloperName : { $not_like : 'LTTS_TSDF_PRIMER%' },
     })
+
+}
+
+exports.deleteDataflow = (conn, dataflowId) => {
+
 
 }
 

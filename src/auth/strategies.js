@@ -33,6 +33,7 @@ const handleSuccess = async (req, res, connection) => {
   req.session.jobs = []
 
   const { api, auth, user } = req.session.salesforce
+
   return res.status(200).json({
     message: `Logged in as ${user.name} at ${auth.instanceUrl} (API v${api.version})`
   })
@@ -82,7 +83,17 @@ exports.handleOauthCallback = async (req, res) => {
   const conn = new jsforce.Connection({ oauth2: oauth2 })
 
   conn.authorize(req.query.code)
-    .then(_ => handleSuccess(req, res, conn))
+    .then(async (_) => {
+
+      req.session.salesforce = await salesforceInfo(conn)
+      req.session.socketRoom = req.session.id
+      req.session.jobs = []
+
+      const { api, auth, user } = req.session.salesforce
+
+      res.redirect(process.env.FRONTEND_HOSTNAME + '/deploy')
+
+    })
     .catch(error => handleError(res, error, 403))
 
 }

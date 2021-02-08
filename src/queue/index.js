@@ -31,13 +31,14 @@ jobQueue.on("completed", (job, result) => {
     message: 'Job has completed.',
     id: job.id,
     result: result,
-    template_keys: job.data.template_keys || null
+    template_keys: job.data.template_keys || null,
+    data: job.data
   })
 })
 
 jobQueue.on("failed", (job, err) => {
   console.error(`Job with ID ${job.id} has failed.`)
-  sendUpdate(job, 'Job has failed.', err)
+  sendUpdate(job, 'Job has failed.', { job, err })
 })
 
 jobQueue.on("error", (error) => {
@@ -46,21 +47,22 @@ jobQueue.on("error", (error) => {
 
 jobQueue.on("waiting", (jobId) => {
   console.log(`Job with ID ${jobId} is waiting.`)
+  sendUpdate(job, 'Job is waiting.', { jobId })
 });
 
 jobQueue.on("active", (job, jobPromise) => {
   console.error(`Job with ID ${job.id} has started.`)
-  sendUpdate(job, 'Job has started.')
+  sendUpdate(job, 'Job has started.', { job })
 })
 
 jobQueue.on("stalled", (job) => {
   console.warning(`Job with ID ${job.id} has stalled.`)
-  sendUpdate(job, 'Job has stalled.')
+  sendUpdate(job, 'Job has stalled.', { job })
 })
 
 jobQueue.on("progress", (job, progress) => {
   console.log(`Job with ID ${job.id} has progressed.`)
-  sendUpdate(job, 'Job has progressed.', progress)
+  sendUpdate(job, 'Job has progressed.', { job, progress })
 })
 
 jobQueue.on("drained", () => {
